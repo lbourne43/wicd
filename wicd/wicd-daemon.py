@@ -1664,7 +1664,14 @@ def main(argv):
         # don't back up if .orig exists, probably there cause
         # wicd exploded
         if not os.path.exists(backup_location):
-            shutil.copy2('/etc/resolv.conf', backup_location)
+            if os.path.islink('/etc/resolv.conf'):
+                old_cwd=os.getcwd()
+                os.chdir('/etc')
+                dest = os.path.abspath(os.readlink('/etc/resolv.conf'))
+                os.chdir(old_cwd)
+                shutil.copy2(dest, backup_location)
+            else:
+                shutil.copy2('/etc/resolv.conf', backup_location)
             os.chmod(backup_location, 0644)
     except IOError:
         print 'error backing up resolv.conf'
